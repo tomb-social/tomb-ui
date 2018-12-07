@@ -1,10 +1,5 @@
 <template>
   <form class="login" @keyup.enter="handleSubmit">
-    <div class="errors" v-if="errors">
-      <div class="errors__error" v-for="error in errors" :key="error">
-        {{ error }}
-      </div>
-    </div>
     <div class="login__field">
       <label for="username">
         Username
@@ -44,7 +39,6 @@ export default {
   data: () => ({
     username: '',
     password: '',
-    errors: {},
   }),
   validations: {
     username: {
@@ -58,11 +52,13 @@ export default {
     ...mapActions('auth', ['authenticate']),
     failedLogin() {
       const message = 'Invalid username or password...';
-      this.errors.remote = message;
+
+      this.$Message.closeAll();
       this.$Message.error(message);
     },
     handleSubmit() {
-      debounce(async () => {
+      // Oh god, debounce an async method!
+      (debounce(async () => {
         this.$v.$touch();
         if (this.$v.$invalid) return;
 
@@ -78,7 +74,7 @@ export default {
             this.failedLogin();
           }
         }
-      }, 250);
+      }, 100))();
     },
   },
 };
