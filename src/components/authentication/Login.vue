@@ -1,50 +1,84 @@
 <template>
-  <form class="login" @submit.prevent="handleSubmit">
-    <div class="login__field">
-      <div v-if="errors.username">{{ errors.username }}</div>
-      <label for="username">Username</label>
-      <at-input name="username" type="text" v-model="username"/>
+  <form class="login" @keyup.enter="handleSubmit">
+    <div class="errors" v-if="errors">
+      <div class="errors__error" v-for="error in errors" :key="error">
+        {{ error }}
+      </div>
     </div>
     <div class="login__field">
-      <div v-if="errors.password">{{ errors.password }}</div>
+      <label for="username">
+        Username
+      </label>
+      <at-input
+        name="username"
+        type="text"
+        v-model="username"
+        :status="($v.username.$error) ? 'error' : null"
+        :icon="($v.username.$error) ? 'x-circle' : null"
+      />
+    </div>
+    <div class="login__field">
       <label for="password">Password</label>
-      <at-input name="password" type="password" v-model="password"/>
+      <at-input
+        name="password"
+        type="password"
+        v-model="password"
+        :status="($v.password.$error) ? 'error' : null"
+        :icon="($v.password.$error) ? 'x-circle' : null"
+      />
     </div>
     <div class="login__field">
-      <div v-if="errors.passwordConfirm">{{ errors.passwordConfirm }}</div>
-      <label for="password-confirm">Confirm Password</label>
-      <at-input name="password-confirm" type="password" v-model="passwordConfirm"/>
-    </div>
-    <div class="login__field">
-      <at-button type="primary">Login</at-button>
+      <at-button @click="handleSubmit" class="login__submit" type="primary">Login</at-button>
     </div>
   </form>
 </template>
 
 <script>
+import { debounce } from 'lodash';
 import { mapActions } from 'vuex';
+import { validationMixin } from 'vuelidate';
+import { required } from 'vuelidate/lib/validators';
 
 export default {
+  mixins: [validationMixin],
   data: () => ({
     username: '',
     password: '',
-    passwordConfirm: '',
     errors: {},
   }),
+  validations: {
+    username: {
+      required,
+    },
+    password: {
+      required,
+    },
+  },
   methods: {
     ...mapActions('auth', ['authenticate']),
-    async handleSubmit() {
-      console.log('AHHH');
-      try {
-        await this.authenticate({
-          strategy: 'local',
-          username: this.username, 
-          password: this.password,
-        });
-        this.errors = {};
-      } catch (errors) {
-        console.log(errors);
-      }
+    failedLogin() {
+      const message = 'Invalid username or password...';
+      this.errors.remote = message;
+      this.$Message.error(message);
+    },
+    handleSubmit() {
+      debounce(async () => {
+        this.$v.$touch();
+        if (this.$v.$invalid) return;
+
+        try {
+          await this.authenticate({
+            strategy: 'local',
+            username: this.username,
+            password: this.password,
+          });
+          this.errors = {};
+        } catch ({ code }) {
+          if (code >= 400) {
+            this.failedLogin();
+          }
+        }
+      }, 250);
     },
   },
 };
@@ -53,13 +87,31 @@ export default {
 <style lang="scss" scoped>
 .login {
   max-width: 450px;
+  padding: 1em;
 
   &__field {
+    display: block;
+
     label {
+      display: block;
       font-weight: bold;
-      // text-transform: uppercase;
+      margin-bottom: 0.5em;
+      padding-left: 1em;
     }
+
+    button {
+      margin: 0 0.5rem 1rem;
+    }
+
     margin-bottom: 1rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__submit {
+    font-size: 1rem;
   }
 }
 </style>
