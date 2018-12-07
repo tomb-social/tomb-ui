@@ -1,4 +1,4 @@
-# ui
+# tomb-ui
 
 ## Project setup
 ```
