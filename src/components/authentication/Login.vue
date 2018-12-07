@@ -10,6 +10,7 @@
         v-model="username"
         :status="($v.username.$error) ? 'error' : null"
         :icon="($v.username.$error) ? 'x-circle' : null"
+        @blur="$v.username.$touch"
       />
     </div>
     <div class="login__field">
@@ -20,6 +21,7 @@
         v-model="password"
         :status="($v.password.$error) ? 'error' : null"
         :icon="($v.password.$error) ? 'x-circle' : null"
+        @blur="$v.password.$touch"
       />
     </div>
     <div class="login__field">
@@ -48,6 +50,14 @@ export default {
       required,
     },
   },
+  watch: {
+    username(value) {
+      if(value === '') this.$v.username.$touch();
+    },
+    password(value) {
+      if(value === '') this.$v.password.$touch();
+    },
+  }, 
   methods: {
     ...mapActions('auth', ['authenticate']),
     failedLogin() {
@@ -57,9 +67,10 @@ export default {
       this.$Message.error(message);
     },
     handleSubmit() {
+      this.$v.$touch();
+
       // Oh god, debounce an async method!
       (debounce(async () => {
-        this.$v.$touch();
         if (this.$v.$invalid) return;
 
         try {
@@ -92,14 +103,12 @@ export default {
       display: block;
       font-weight: bold;
       margin-bottom: 0.5em;
-      padding-left: 1em;
     }
 
     button {
-      margin: 0 0.5rem 1rem;
+      margin-top: 0.5em;
     }
-
-    margin-bottom: 1rem;
+    margin-bottom: 1em;
 
     &:last-child {
       margin-bottom: 0;
