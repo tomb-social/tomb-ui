@@ -7,7 +7,7 @@ import feathersClient from './feathers-client';
 const { service, auth, FeathersVuex } = feathersVuex(feathersClient, { idField: '_id' });
 
 Vue.use(Vuex);
-Vue.use(FeathersVuex)
+Vue.use(FeathersVuex);
 
 export default new Vuex.Store({
   state: {
@@ -21,6 +21,6 @@ export default new Vuex.Store({
   },
   plugins: [
     service('posts'),
-    auth({ userService: 'users' })
-  ]
+    auth({ userService: 'users' }),
+  ],
 });

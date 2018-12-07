@@ -1,29 +1,42 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <!-- <router-link to="/">Home</router-link> -->
+      <!-- <router-link v-if="!user" to="/login">Login</router-link>
+      <router-link v-if="user" to="/account">Account</router-link>
+      <a v-if="user" @click.prevent="handleLogout" href="#">Logout</a> -->
+
+      <at-menu mode="horizontal" active-name="1">
+        <at-menu-item name="1">
+          <i class="icon icon-home"></i>
+          Home
+        </at-menu-item>
+        <at-menu-item name="2" v-if="user">
+          <i class="icon icon-eye-off"></i>
+          Logout
+        </at-menu-item>
+      </at-menu>
     </div>
     <router-view/>
   </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
+<script>
+import { mapActions } from 'vuex';
+
+export default {
+  computed: {
+    user() {
+      return this.$store.state.auth.user;
+    },
+  },
+  methods: {
+    ...mapActions('auth', ['logout']),
+
+    async handleLogout() {
+      await this.logout();
+      this.$router.push('/');
+    },
+  },
+};
+</script>
